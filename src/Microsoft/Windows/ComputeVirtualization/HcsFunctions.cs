@@ -13,8 +13,8 @@ namespace Microsoft.Windows.ComputeVirtualization
         [DllImport("vmcompute.dll", PreserveSig = false, ExactSpelling = true)]
         public static extern void StartComputeSystem(string id);
 
-        [DllImport("vmcompute.dll", PreserveSig = false, ExactSpelling = true)]
-        public static extern void TerminateComputeSystem(string id);
+        [DllImport("vmcompute.dll", ExactSpelling = true)]
+        public static extern int TerminateComputeSystem(string id);
 
         [DllImport("vmcompute.dll", PreserveSig = false, ExactSpelling = true)]
         public static extern void ShutdownComputeSystem(string id, int timeout);

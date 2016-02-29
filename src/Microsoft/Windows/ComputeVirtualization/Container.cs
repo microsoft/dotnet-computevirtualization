@@ -59,6 +59,7 @@ namespace Microsoft.Windows.ComputeVirtualization
         {
             if (!_killed)
             {
+                // Ignore the return value for now.
                 HcsFunctions.TerminateComputeSystem(_id);
                 _killed = true;
             }

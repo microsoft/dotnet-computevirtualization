@@ -2,13 +2,13 @@
 <package >
   <metadata>
     <id>Microsoft.Windows.ComputeVirtualization</id>
-    <version>0.1.0-alpha</version>
-    <authors>Microsoft Corporation</authors>
+    <version>0.1.0-alpha2</version>
+    <authors>Microsoft</authors>
     <licenseUrl>https://raw.githubusercontent.com/Microsoft/dotnet-computevirtualization/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/Microsoft/dotnet-computevirtualization/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Simple class library to interface with Windows host compute service.</description>
-    <copyright>Copyright 2016</copyright>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
   </metadata>
   <files>
     <file src="..\src\Microsoft\Windows\ComputeVirtualization\bin\Release\Microsoft.Windows.ComputeVirtualization.dll" target="lib\net452\Microsoft.Windows.ComputeVirtualization.dll" />
