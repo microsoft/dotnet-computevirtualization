@@ -18,7 +18,7 @@ namespace SampleContainerRun
                     new Layer { Id = id, Path = parent }
                 };
 
-                ContainerStorage.CreateSandbox(path);
+                ContainerStorage.CreateSandbox(path, layers);
                 try
                 {
                     Console.Out.WriteLine("creating container");

@@ -38,7 +38,7 @@ namespace Microsoft.Windows.ComputeVirtualization
             public static extern void DeactivateLayer(ref DriverInfo info, string id);
 
             [DllImport("vmcompute.dll", PreserveSig = false, ExactSpelling = true)]
-            public static extern void CreateSandboxLayer(ref DriverInfo info, string id, string parentId, IntPtr unused1, int unused2);
+            public static extern void CreateSandboxLayer(ref DriverInfo info, string id, string parentId, [MarshalAs(UnmanagedType.LPArray)] LayerDescriptor[] layers, int layerCount);
 
             [DllImport("vmcompute.dll", PreserveSig = false, ExactSpelling = true)]
             public static extern void PrepareLayer(ref DriverInfo info, string id, [MarshalAs(UnmanagedType.LPArray)] LayerDescriptor[] layers, int layerCount);
@@ -100,11 +100,13 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// Creates a new storage sandbox at the given directory path.
         /// </summary>
         /// <param name="path">A path to the new sandbox.</param>
-        public static void CreateSandbox(string path)
+        /// <param name="layers">A list of parent layers.</param>
+        public static void CreateSandbox(string path, IList<Layer> layers)
         {
             using (var info = new DriverInfoHelper())
+            using (var descriptors = new LayerHelper(layers))
             {
-                StorageFunctions.CreateSandboxLayer(ref info.Data, Path.GetFullPath(path), null, new IntPtr(0), 0);
+                StorageFunctions.CreateSandboxLayer(ref info.Data, Path.GetFullPath(path), null, descriptors.Data, descriptors.Data.Length);
             }
         }
 
