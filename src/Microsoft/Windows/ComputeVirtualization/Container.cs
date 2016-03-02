@@ -28,11 +28,13 @@ namespace Microsoft.Windows.ComputeVirtualization
         private string _id;
         private bool _killOnClose;
         private bool _killed;
+        private ContainerStorage.MountedSandbox _sandbox;
 
-        internal Container(string id, bool terminateOnClose)
+        internal Container(string id, bool terminateOnClose, ContainerStorage.MountedSandbox sandbox)
         {
             _id = id;
             _killOnClose = terminateOnClose;
+            _sandbox = sandbox;
         }
 
         /// <summary>
@@ -61,6 +63,12 @@ namespace Microsoft.Windows.ComputeVirtualization
             {
                 // Ignore the return value for now.
                 HcsFunctions.TerminateComputeSystem(_id);
+                if (_sandbox != null)
+                {
+                    _sandbox.Dispose();
+                    _sandbox = null;
+                }
+
                 _killed = true;
             }
         }

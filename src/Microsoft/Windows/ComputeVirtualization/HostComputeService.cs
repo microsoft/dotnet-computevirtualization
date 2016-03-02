@@ -137,8 +137,15 @@ namespace Microsoft.Windows.ComputeVirtualization
                 };
             }
 
+            ContainerStorage.MountedSandbox sandbox = null;
+            if (settings.KillOnClose && !settings.HyperVContainer)
+            {
+                sandbox = ContainerStorage.MountSandbox(settings.SandboxPath, settings.Layers);
+                hcsSettings.VolumePath = sandbox.MountPath;
+            }
+
             HcsFunctions.CreateComputeSystem(id, JsonHelper.ToJson(hcsSettings));
-            return new Container(id, settings.KillOnClose);
+            return new Container(id, settings.KillOnClose, sandbox);
         }
 
         /// <summary>
@@ -152,7 +159,7 @@ namespace Microsoft.Windows.ComputeVirtualization
             {
                 return null;
             }
-            return new Container(id, false);
+            return new Container(id, false, null);
         }
     }
 }
