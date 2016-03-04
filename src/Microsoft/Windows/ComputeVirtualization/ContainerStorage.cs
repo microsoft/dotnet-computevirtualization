@@ -162,10 +162,22 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// </summary>
         /// <param name="path">The path to the sandbox.</param>
         /// <param name="layers">A list of parent layers.</param>
-        /// <returns></returns>
+        /// <returns>A mounted sandbox object. When disposed, the sandbox will be dismounted.</returns>
         public static MountedSandbox MountSandbox(string path, IList<Layer> layers)
         {
             return new MountedSandbox(Path.GetFullPath(path), layers);
+        }
+
+        /// <summary>
+        /// Dismounts a sandbox that was mounted but never dismounted.
+        /// </summary>
+        /// <param name="path">The path to the sandbox.</param>
+        public static void DismountSandbox(string path)
+        {
+            using (var info = new DriverInfoHelper())
+            {
+                StorageFunctions.DeactivateLayer(ref info.Data, path);
+            }
         }
 
         /// <summary>
