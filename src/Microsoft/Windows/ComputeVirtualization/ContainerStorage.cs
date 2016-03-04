@@ -54,6 +54,12 @@ namespace Microsoft.Windows.ComputeVirtualization
 
             [DllImport("vmcompute.dll", PreserveSig = false, ExactSpelling = true)]
             public static extern void GetLayerMountPath(ref DriverInfo info, string id, ref UIntPtr length, StringBuilder path);
+
+            [DllImport("vmcompute.dll", PreserveSig = false, ExactSpelling = true)]
+            public static extern void ProcessBaseImage(string path);
+
+            [DllImport("vmcompute.dll", PreserveSig = false, ExactSpelling = true)]
+            public static extern void ProcessUtilityImage(string path);
         }
 
         private class DriverInfoHelper : IDisposable
@@ -244,6 +250,26 @@ namespace Microsoft.Windows.ComputeVirtualization
             {
                 StorageFunctions.ImportLayer(ref info.Data, Path.GetFullPath(path), importPath, descriptors.Data, descriptors.Data.Length);
             }
+        }
+
+        /// <summary>
+        /// Post-processes an extracted base layer, preparing it for use. The contents of the layer are expected
+        /// to be at [path]\Files.
+        /// </summary>
+        /// <param name="path">The path to the base layer.</param>
+        public static void ProcessBaseLayer(string path)
+        {
+            StorageFunctions.ProcessBaseImage(Path.GetFullPath(path));
+        }
+
+        /// <summary>
+        /// Post-processes an extracted utility VM image, preparing it for use. The contents of the image are expected
+        /// to be at [path]\Files.
+        /// </summary>
+        /// <param name="path">The path to the utility VM image.</param>
+        public static void ProcessUtilityVMImage(string path)
+        {
+            StorageFunctions.ProcessUtilityImage(Path.GetFullPath(path));
         }
     }
 }

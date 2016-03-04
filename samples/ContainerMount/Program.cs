@@ -29,6 +29,14 @@ namespace ContainerMount
                 case "-destroy":
                     ContainerStorage.DestroyLayer(args[1]);
                     break;
+
+                case "-process":
+                    ContainerStorage.ProcessBaseLayer(args[1]);
+                    break;
+
+                case "-processvm":
+                    ContainerStorage.ProcessUtilityVMImage(args[1]);
+                    break;
             }
         }
     }
