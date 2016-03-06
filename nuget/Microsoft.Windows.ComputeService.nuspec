@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Microsoft.Windows.ComputeVirtualization</id>
-    <version>0.1.0-alpha2</version>
+    <version>0.1.0-alpha3</version>
     <authors>Microsoft</authors>
     <licenseUrl>https://raw.githubusercontent.com/Microsoft/dotnet-computevirtualization/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/Microsoft/dotnet-computevirtualization/</projectUrl>
