@@ -1,6 +1,7 @@
 {
   "projects": [
-    "src"
+    "src",
+    "samples"
   ],
   "sdk": {
     "version": "1.0.0-rc2-20221"

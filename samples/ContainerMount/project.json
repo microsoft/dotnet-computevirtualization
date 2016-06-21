@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0-alpha4",
+  "description": "ContainerMount Sample",
+  "buildOptions": {
+    "emitEntryPoint": true
+  },
+  "frameworks": {
+    "net46": {
+      "dependencies": {
+        "Microsoft.Windows.ComputeVirtualization": "0.1.0-alpha4"
+      }
+    }
+  }
+}
