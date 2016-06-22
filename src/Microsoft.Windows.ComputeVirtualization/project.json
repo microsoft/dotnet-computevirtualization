@@ -1,6 +1,15 @@
 {
   "version": "0.1.0-alpha4",
-  "description": "Microsoft.Windows.ComputeVirtualization Cmdlet Library",
+  "description": "Simple class library to interface with Windows host compute service.",
+  "copyright": "© Microsoft Corporation. All rights reserved.",
+  "authors": [
+    "Microsoft"
+  ],
+  "packOptions": {
+    "licenseUrl": "https://raw.githubusercontent.com/Microsoft/dotnet-computevirtualization/master/LICENSE",
+    "projectUrl": "https://github.com/Microsoft/dotnet-computevirtualization/",
+    "requireLicenseAcceptance": false
+  },
   "frameworks": {
     "net46": {
       "dependencies": {
