@@ -3,21 +3,21 @@ using System.Runtime.Serialization;
 
 namespace Microsoft.Windows.ComputeVirtualization.Schema
 {    
-    enum SystemType
+    public enum SystemType
     {
         Container,
         VirtualMachine = 1
     }
 
-    
-    enum NatPortProtocol
+
+    public enum NatPortProtocol
     {
         TCP,
         UDP = 1
     }
 
-    
-    enum NetworkMode
+
+    public enum NetworkMode
     {
         NAT,
         Transparent = 1,
@@ -26,14 +26,17 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         Private = 4,
     }
 
-    
-    enum PolicyType
+
+    public enum PolicyType
     {
         NAT,
-        QOS = 1
+        QOS = 1,
+        VLAN = 2,
+        VSID = 3
+
     }
 
-    
+
     [DataContract]
     struct Layer
     {
@@ -502,7 +505,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
 
     
     [DataContract]
-    struct Subnet
+    public struct Subnet
     {
         [DataMember(EmitDefaultValue = false)]
         public string GatewayAddress
@@ -521,7 +524,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
 
     
     [DataContract]
-    struct MacPool
+    public struct MacPool
     {
         [DataMember(EmitDefaultValue = false)]
         public string StartMacAddress
@@ -540,7 +543,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
 
     
     [DataContract]
-    struct Policy
+    public struct Policy
     {
         [DataMember(EmitDefaultValue = false, Name = "Type")]
         private string _Type;
@@ -564,7 +567,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
 
     
     [DataContract]
-    struct NatPolicyData
+    public struct NatPolicyData
     {
         [DataMember(EmitDefaultValue = false, Name = "Type")]
         private string _Type;
@@ -621,7 +624,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
 
     
     [DataContract]
-    struct QosPolicyData
+    public struct QosPolicyData
     {
         [DataMember(EmitDefaultValue = false, Name = "Type")]
         private string _Type;
@@ -650,9 +653,68 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
+    [DataContract]
+    public struct VlanPolicyData
+    {
+        [DataMember(EmitDefaultValue = false, Name = "Type")]
+        private string _Type;
+        public PolicyType Type
+        {
+            get
+            {
+                if (this._Type == null)
+                {
+                    return default(PolicyType);
+                }
+
+                return (PolicyType)Enum.Parse(typeof(PolicyType), this._Type, true);
+            }
+            set
+            {
+                this._Type = value.ToString();
+            }
+        }
+
+        [DataMember]
+        public ulong VLAN
+        {
+            get;
+            set;
+        }
+    }
     
     [DataContract]
-    struct NetworkEndpoint
+    public struct VsidPolicyData
+    {
+        [DataMember(EmitDefaultValue = false, Name = "Type")]
+        private string _Type;
+        public PolicyType Type
+        {
+            get
+            {
+                if (this._Type == null)
+                {
+                    return default(PolicyType);
+                }
+
+                return (PolicyType)Enum.Parse(typeof(PolicyType), this._Type, true);
+            }
+            set
+            {
+                this._Type = value.ToString();
+            }
+        }
+
+        [DataMember]
+        public ulong VSID
+        {
+            get;
+            set;
+        }
+    }
+
+    [DataContract]
+    public struct NetworkEndpoint
     {
         [DataMember(IsRequired = true)]
         public Guid Id
