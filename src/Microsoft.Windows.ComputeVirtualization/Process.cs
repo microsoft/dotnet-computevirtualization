@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Windows.ComputeVirtualization
 {
@@ -9,8 +10,8 @@ namespace Microsoft.Windows.ComputeVirtualization
     /// </summary>
     public class Process : IDisposable
     {
-        private string _id;
-        private int _pid;
+        private IntPtr _p;
+        private HcsNotificationWatcher _watcher;
         private StreamWriter _stdin;
         private StreamReader _stdout, _stderr;
         private int _exitCode;
@@ -50,14 +51,21 @@ namespace Microsoft.Windows.ComputeVirtualization
             }
         }
 
-        internal Process(string id, int pid, StreamWriter stdin, StreamReader stdout, StreamReader stderr, bool killOnClose)
+        internal Process(IntPtr process, StreamWriter stdin, StreamReader stdout, StreamReader stderr, bool killOnClose)
         {
-            _id = id;
-            _pid = pid;
+            _p = process;
             _stdin = stdin;
             _stdout = stdout;
             _stderr = stderr;
             _killOnClose = killOnClose;
+            _watcher = new HcsNotificationWatcher(
+                _p,
+                HcsFunctions.HcsRegisterProcessCallback,
+                HcsFunctions.HcsUnregisterProcessCallback,
+                new HCS_NOTIFICATIONS[]{
+                    HCS_NOTIFICATIONS.HcsNotificationProcessExited
+                }
+            );
         }
 
         /// <summary>
@@ -65,47 +73,36 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// </summary>
         /// <param name="height">The new height, in character cells.</param>
         /// <param name="width">The new width, in character cells.</param>
-        public void ResizeConsole(short height, short width)
+        public void ResizeConsole(ushort height, ushort width)
         {
-            HcsFunctions.ResizeConsoleInComputeSystem(_id, _pid, height, width, 0);
-        }
+            Schema.ProcessConsoleSize procSize = new Schema.ProcessConsoleSize();
+            procSize.Height = height;
+            procSize.Width = width;
 
-        /// <summary>
-        /// Waits forever for the process to exit.
-        /// </summary>
-        public void WaitForExit()
-        {
-            int exitCode;
-            int hr = HcsFunctions.WaitForProcessInComputeSystem(_id, _pid, -1, out exitCode);
-            if (hr < 0)
-            {
-                throw new Win32Exception(hr);
-            }
-            _exitCode = exitCode;
-            _exited = true;
+            Schema.ProcessModifyRequest procModReq = new Schema.ProcessModifyRequest();
+            procModReq.Operation = Schema.ProcessModifyOperation.ConsoleSize;
+            procModReq.ConsoleSize = procSize;
+
+            string result;
+            HcsFunctions.ProcessHcsCall(HcsFunctions.HcsModifyProcess(_p, JsonHelper.ToJson(procModReq), out result), result);
         }
 
         /// <summary>
         /// Waits for the process to exit.
         /// </summary>
-        /// <param name="timeout">The number of milliseconds to wait.</param>
+        /// <param name="timeout">The number of milliseconds to wait. Default is infinite</param>
         /// <returns>True if the process exited, false if the wait timed out.</returns>
-        public bool WaitForExit(int timeout)
+        public bool WaitForExit(int timeout = Timeout.Infinite)
         {
-            int exitCode;
-            int hr = HcsFunctions.WaitForProcessInComputeSystem(_id, _pid, timeout, out exitCode);
-            if (hr < 0)
-            {
-                if (hr == E_WAIT_TIMEOUT)
-                {
-                    return false;
-                }
+            return WaitForExitAsync().Wait(timeout);
+        }
 
-                throw new Win32Exception(hr);
-            }
-            _exitCode = exitCode;
+        public async Task WaitForExitAsync()
+        {
+            var result = await _watcher.WatchAsync(HCS_NOTIFICATIONS.HcsNotificationProcessExited);
+            var processData = JsonHelper.FromJson<Schema.ProcessStatus>(result.Data);
+            _exitCode = processData.ExitCode;
             _exited = true;
-            return true;
         }
 
         /// <summary>
@@ -117,12 +114,17 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// </remarks>
         public void Kill()
         {
-            if (!_killed)
+            KillAsync().Wait();
+        }
+
+        public async Task KillAsync()
+        {
+            string result;
+            if (!_killed && !_exited && HcsFunctions.ProcessHcsCall(HcsFunctions.HcsTerminateProcess(_p, out result), result))
             {
-                // Ignore the error code.
-                HcsFunctions.TerminateProcessInComputeSystem(_id, _pid);
-                _killed = true;
+                await _watcher.WatchAsync(HCS_NOTIFICATIONS.HcsNotificationProcessExited);
             }
+            _killed = true;
         }
 
         /// <summary>
@@ -145,6 +147,12 @@ namespace Microsoft.Windows.ComputeVirtualization
             if (_killOnClose)
             {
                 Kill();
+            }
+            _watcher.Dispose();
+            if (_p != IntPtr.Zero)
+            {
+                HcsFunctions.ProcessHcsCall(HcsFunctions.HcsCloseProcess(_p), null);
+                _p = IntPtr.Zero;
             }
         }
     }

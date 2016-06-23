@@ -36,6 +36,27 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
 
         [DataMember]
+        public bool CreateStdInPipe
+        {
+            get;
+            set;
+        }
+
+        [DataMember]
+        public bool CreateStdOutPipe
+        {
+            get;
+            set;
+        }
+
+        [DataMember]
+        public bool CreateStdErrPipe
+        {
+            get;
+            set;
+        }
+
+        [DataMember]
         public string StdInPipe
         {
             get;
@@ -80,7 +101,32 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
 
 
     [DataContract]
-    struct ConsoleSettings
+    struct ProcessStatus
+    {
+        [DataMember]
+        public bool ProcessExited
+        {
+            get;
+            set;
+        }
+
+        [DataMember]
+        public ushort ExitCode
+        {
+            get;
+            set;
+        }
+
+        [DataMember]
+        public int WaitResult
+        {
+            get;
+            set;
+        }
+    }
+
+    [DataContract]
+    struct ProcessConsoleSize
     {
         [DataMember]
         public ushort Height
@@ -91,6 +137,42 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
 
         [DataMember]
         public ushort Width
+        {
+            get;
+            set;
+        }
+    }
+
+    enum ProcessModifyOperation
+    {
+        ConsoleSize,
+        CloseHandle
+    }
+
+    [DataContract]
+    [KnownType(typeof(ProcessConsoleSize))]
+    struct ProcessModifyRequest
+    {
+        [DataMember(IsRequired = true, Name = "Operation")]
+        private string _Operation;
+        public ProcessModifyOperation Operation
+        {
+            get
+            {
+                if (this._Operation == null)
+                {
+                    return default(ProcessModifyOperation);
+                }
+
+                return (ProcessModifyOperation)Enum.Parse(typeof(ProcessModifyOperation), this._Operation, true);
+            }
+            set
+            {
+                this._Operation = value.ToString();
+            }
+        }
+        [DataMember(EmitDefaultValue = false)]
+        public ProcessConsoleSize? ConsoleSize
         {
             get;
             set;

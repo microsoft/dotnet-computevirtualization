@@ -1,8 +1,9 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Windows.ComputeVirtualization
 {
@@ -25,14 +26,39 @@ namespace Microsoft.Windows.ComputeVirtualization
     /// </summary>
     public class Container : IDisposable
     {
-        private string _id;
+        private IntPtr _cs;
         private bool _killOnClose;
-        private bool _killed;
+        private bool _dead;
 
-        internal Container(string id, bool terminateOnClose)
+        private HcsNotificationWatcher _watcher;
+
+        private Container(string id, IntPtr computeSystem, bool terminateOnClose, HcsNotificationWatcher watcher)
         {
-            _id = id;
             _killOnClose = terminateOnClose;
+            _cs = computeSystem;
+            _watcher = watcher;
+        }
+
+        internal static Container Initialize(string id, IntPtr computeSystem, bool terminateOnClose)
+        {
+            var watcher = new HcsNotificationWatcher(
+                computeSystem,
+                HcsFunctions.HcsRegisterComputeSystemCallback,
+                HcsFunctions.HcsUnregisterComputeSystemCallback,
+                new HCS_NOTIFICATIONS[]{
+                    HCS_NOTIFICATIONS.HcsNotificationSystemExited,
+                    HCS_NOTIFICATIONS.HcsNotificationSystemCreateCompleted,
+                    HCS_NOTIFICATIONS.HcsNotificationSystemStartCompleted
+                    }
+                );
+            var container = new Container(
+                id,
+                computeSystem,
+                terminateOnClose,
+                watcher);
+            watcher.Wait(HCS_NOTIFICATIONS.HcsNotificationSystemCreateCompleted);
+
+            return container;
         }
 
         /// <summary>
@@ -40,16 +66,35 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// </summary>
         public void Start()
         {
-            HcsFunctions.StartComputeSystem(_id);
+            StartAsync().Wait();
+        }
+
+        public async Task StartAsync()
+        {
+            string result;
+            if (HcsFunctions.ProcessHcsCall(HcsFunctions.HcsStartComputeSystem(_cs, null, out result), result))
+            {
+                await _watcher.WatchAsync(HCS_NOTIFICATIONS.HcsNotificationSystemStartCompleted);
+            }
         }
 
         /// <summary>
         /// Attempts to cleanly shut down the container.
         /// </summary>
         /// <param name="timeout">Timeout to wait for the shutdown to complete, in milliseconds.</param>
-        public void Shutdown(int timeout)
+        public void Shutdown(int timeout = Timeout.Infinite)
         {
-            HcsFunctions.ShutdownComputeSystem(_id, timeout);
+            ShutdownAsync().Wait(timeout);
+        }
+
+        public async Task ShutdownAsync()
+        {
+            string result;
+            if (!_dead && HcsFunctions.ProcessHcsCall(HcsFunctions.HcsShutdownComputeSystem(_cs, null, out result), result))
+            {
+                await _watcher.WatchAsync(HCS_NOTIFICATIONS.HcsNotificationSystemExited);
+            }
+            _dead = true;
         }
 
         /// <summary>
@@ -57,12 +102,17 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// </summary>
         public void Kill()
         {
-            if (!_killed)
+            KillAsync().Wait();
+        }
+
+        public async Task KillAsync()
+        {
+            string result;
+            if (!_dead && HcsFunctions.ProcessHcsCall(HcsFunctions.HcsTerminateComputeSystem(_cs, null, out result), result))
             {
-                // Ignore the return value for now.
-                HcsFunctions.TerminateComputeSystem(_id);
-                _killed = true;
+                await _watcher.WatchAsync(HCS_NOTIFICATIONS.HcsNotificationSystemExited);
             }
+            _dead = true;
         }
 
         /// <summary>
@@ -76,26 +126,6 @@ namespace Microsoft.Windows.ComputeVirtualization
             // want by using .BaseStream, but this is a good default.
             var encoding = new UTF8Encoding(false);
 
-            int pid;
-            var handles = new IntPtr[3];
-            var gch = GCHandle.Alloc(handles);
-            IntPtr stdinAddr = new IntPtr(), stdoutAddr = new IntPtr(), stderrAddr = new IntPtr();
-
-            if (startInfo.RedirectStandardInput)
-            {
-                stdinAddr = Marshal.UnsafeAddrOfPinnedArrayElement(handles, 0);
-            }
-
-            if (startInfo.RedirectStandardOutput)
-            {
-                stdoutAddr = Marshal.UnsafeAddrOfPinnedArrayElement(handles, 1);
-            }
-
-            if (startInfo.RedirectStandardError)
-            {
-                stderrAddr = Marshal.UnsafeAddrOfPinnedArrayElement(handles, 2);
-            }
-
             var parameters = new Schema.ProcessParameters
             {
                 ApplicationName = startInfo.ApplicationName,
@@ -104,27 +134,32 @@ namespace Microsoft.Windows.ComputeVirtualization
                 RestrictedToken = startInfo.RestrictedToken,
                 User = startInfo.User,
                 WorkingDirectory = startInfo.WorkingDirectory,
+                CreateStdInPipe = startInfo.RedirectStandardInput,
+                CreateStdOutPipe = startInfo.RedirectStandardOutput,
+                CreateStdErrPipe = startInfo.RedirectStandardError,
             };
 
-            HcsFunctions.CreateProcessWithStdHandlesInComputeSystem(_id, JsonHelper.ToJson(parameters), out pid, stdinAddr, stdoutAddr, stderrAddr);
+            IntPtr process;
+            string result;
+            HCS_PROCESS_INFORMATION procInfo;
+            HcsFunctions.ProcessHcsCall(HcsFunctions.HcsCreateProcess(_cs, JsonHelper.ToJson(parameters), out procInfo, out process, out result), result);
+
             StreamWriter stdinHandle = null;
             StreamReader stdoutHandle = null, stderrHandle = null;
-            if (handles[0].ToInt64() != 0)
+            if (startInfo.RedirectStandardInput)
             {
-                stdinHandle = new StreamWriter(new FileStream(new SafeFileHandle(handles[0], true), FileAccess.Write), encoding);
+                stdinHandle = new StreamWriter(new FileStream(new SafeFileHandle(procInfo.StdInput, true), FileAccess.Write), encoding);
+            }
+            if (startInfo.RedirectStandardOutput)
+            {
+                stdoutHandle = new StreamReader(new FileStream(new SafeFileHandle(procInfo.StdOutput, true), FileAccess.Read), encoding);
+            }
+            if (startInfo.RedirectStandardError)
+            {
+                stderrHandle = new StreamReader(new FileStream(new SafeFileHandle(procInfo.StdError, true), FileAccess.Read), encoding);
             }
 
-            if (handles[1].ToInt64() != 0)
-            {
-                stdoutHandle = new StreamReader(new FileStream(new SafeFileHandle(handles[1], true), FileAccess.Read), encoding);
-            }
-
-            if (handles[2].ToInt64() != 0)
-            {
-                stderrHandle = new StreamReader(new FileStream(new SafeFileHandle(handles[2], true), FileAccess.Read), encoding);
-            }
-
-            return new Process(_id, pid, stdinHandle, stdoutHandle, stderrHandle, startInfo.KillOnClose);
+            return new Process(process, stdinHandle, stdoutHandle, stderrHandle, startInfo.KillOnClose);
         }
 
         /// <summary>
@@ -134,17 +169,28 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// <returns></returns>
         public Process GetProcess(int pid)
         {
-            return new Process(_id, pid, null, null, null, false);
+            IntPtr process;
+            string result;
+            HcsFunctions.ProcessHcsCall(HcsFunctions.HcsOpenProcess(_cs, (uint)pid, out process, out result), result);
+            return new Process(process, null, null, null, false);
         }
 
         /// <summary>
-        /// Disposes of the container object, killing the container if <see cref="ContainerSettings.KillOnClose"/> was set.
+        /// Disposes of the container object.
         /// </summary>
         public void Dispose()
         {
-            if (_killOnClose)
+            if (_killOnClose && !_dead)
             {
                 Kill();
+            }
+
+            _watcher.Dispose();
+
+            if (_cs != IntPtr.Zero)
+            {
+                HcsFunctions.ProcessHcsCall(HcsFunctions.HcsCloseComputeSystem(_cs), null);
+                _cs = IntPtr.Zero;
             }
         }
     }

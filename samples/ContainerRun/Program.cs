@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Microsoft.Windows.ComputeVirtualization;
 
 namespace SampleContainerRun
@@ -9,8 +10,8 @@ namespace SampleContainerRun
         {
             try
             {
-                var path = args[1];
                 var parent = args[0];
+                var path = args[1];
                 var command = args[2];
                 var id = Guid.NewGuid();
                 var layers = new Layer[]
@@ -35,6 +36,8 @@ namespace SampleContainerRun
                         Console.Out.WriteLine("starting container");
                         Console.Out.Flush();
                         container.Start();
+                        try
+                        {
                         var si = new ProcessStartInfo
                         {
                             CommandLine = command,
@@ -46,6 +49,12 @@ namespace SampleContainerRun
                             Console.Out.Write(process.StandardOutput.ReadToEnd());
                             process.WaitForExit(5000);
                             Console.Out.WriteLine("process exited with {0}", process.ExitCode);
+                        }
+                        }
+                        finally
+                        {
+                            Console.Out.WriteLine("shutting down container");
+                            container.Shutdown(Timeout.Infinite);
                         }
                     }
                 }

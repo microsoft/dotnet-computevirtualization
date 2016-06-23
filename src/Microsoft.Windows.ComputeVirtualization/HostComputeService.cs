@@ -110,6 +110,7 @@ namespace Microsoft.Windows.ComputeVirtualization
                 LayerFolderPath = settings.SandboxPath,
                 Layers = settings.Layers.Select(x => new Schema.Layer { Id = x.Id, Path = x.Path }).ToArray(),
                 HvPartition = settings.HyperVContainer,
+                TerminateOnLastHandleClosed = settings.KillOnClose,
             };
 
             if (settings.MappedDirectories != null)
@@ -137,8 +138,10 @@ namespace Microsoft.Windows.ComputeVirtualization
                 };
             }
 
-            HcsFunctions.CreateComputeSystem(id, JsonHelper.ToJson(hcsSettings));
-            return new Container(id, settings.KillOnClose);
+            IntPtr computeSystem;
+            string result;
+            HcsFunctions.ProcessHcsCall(HcsFunctions.HcsCreateComputeSystem(id, JsonHelper.ToJson(hcsSettings), IntPtr.Zero, out computeSystem, out result), result);
+            return Container.Initialize(id, computeSystem, settings.KillOnClose);
         }
 
         /// <summary>
@@ -148,11 +151,11 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// <returns>A Container object that can be used to manipulate the container.</returns>
         public static Container GetComputeSystem(string id)
         {
-            if (!HcsFunctions.ComputeSystemExists(id))
-            {
-                return null;
-            }
-            return new Container(id, false);
+            IntPtr computeSystem;
+            string result;
+            HcsFunctions.ProcessHcsCall(HcsFunctions.HcsOpenComputeSystem(id, out computeSystem, out result), result);
+
+            return Container.Initialize(id, computeSystem, false);
         }
     }
 }
