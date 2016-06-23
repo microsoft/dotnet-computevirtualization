@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using System.Collections.Generic;
 
 namespace Microsoft.Windows.ComputeVirtualization.Schema
 {
@@ -56,7 +57,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
 
         [DataMember]
-        public Tuple<string, string> Environment
+        public Dictionary<string, string> Environment
         {
             get;
             set;
@@ -77,7 +78,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     struct ConsoleSettings
     {
