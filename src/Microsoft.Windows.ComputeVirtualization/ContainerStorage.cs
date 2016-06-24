@@ -67,7 +67,7 @@ namespace Microsoft.Windows.ComputeVirtualization
             public StorageFunctions.DriverInfo Data;
 
             public DriverInfoHelper()
-            {                
+            {
                 Data.Type = 1;
                 Data.Path = Marshal.StringToCoTaskMemUni("");
                 Marshal.WriteInt16(Data.Path, 0);
@@ -89,7 +89,7 @@ namespace Microsoft.Windows.ComputeVirtualization
                 for (int i = 0; i < layers.Count; i++)
                 {
                     Data[i].Id = layers[i].Id;
-                    Data[i].Path = Marshal.StringToCoTaskMemUni(layers[i].Path);
+                    Data[i].Path = Marshal.StringToCoTaskMemUni(Path.GetFullPath(layers[i].Path));
                 }
             }
 
