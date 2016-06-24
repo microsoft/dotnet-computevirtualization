@@ -99,15 +99,6 @@ namespace Microsoft.Windows.ComputeVirtualization.Test
                     throw new ArgumentException("Invalid container type");
             }
             parent = Environment.GetEnvironmentVariable(baseLayerEnv);
-            // BUGBUG. This is to avoid CreateSandbox throwing access violation when parent is null. It should handle this with a proper exception instead.
-            try
-            {
-                parent = System.IO.Path.GetFullPath(parent);
-            }
-            catch
-            {
-                Assert.True(false, String.Format("Environment variable {0} must be set to a valid base layer", baseLayerEnv));
-            }
 
             path = String.Format("C:\\\\ComputeVirtualizationTest\\{0}", id.ToString());
 
@@ -120,9 +111,9 @@ namespace Microsoft.Windows.ComputeVirtualization.Test
             {
                 ContainerStorage.CreateSandbox(path, layers);
             }
-            catch
+            catch (Exception ex)
             {
-                Assert.True(false, String.Format("Failed to create sandbox, ensure that environment variable {0} is set to a valid base layer path", servercoreBaseLayerEnv));
+                throw new Exception(String.Format("Failed to create sandbox, ensure that environment variable {0} is set to a valid base layer path", baseLayerEnv), ex);
             }
         }
 
