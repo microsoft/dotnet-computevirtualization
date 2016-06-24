@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Windows.ComputeVirtualization.Test
 {
-    public class ServercoreContainerTests
+    public class ServercoreContainerTests : IDisposable
     {
         Guid id = Guid.NewGuid();
         Sandbox sandbox;
@@ -68,6 +68,11 @@ namespace Microsoft.Windows.ComputeVirtualization.Test
                     Assert.Equal(0, process.ExitCode);
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            sandbox.Dispose();
         }
     }
 
