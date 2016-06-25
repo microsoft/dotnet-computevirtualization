@@ -5,7 +5,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
 {
     
     [DataContract]
-    struct HNSNetwork
+    public struct HNSNetwork
     {
         [DataMember(EmitDefaultValue = false)]
         public string ID
@@ -92,7 +92,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
 
     
     [DataContract]
-    struct HNSEndpoint
+    public struct HNSEndpoint
     {
         [DataMember(EmitDefaultValue = false)]
         public Guid ID
