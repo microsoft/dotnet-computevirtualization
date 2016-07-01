@@ -6,7 +6,8 @@
       "include": [
         "xunit.runner.json"
       ]
-    }
+    },
+    "debugType": "portable"
   },
   "runtimes": {
     "win10-x64": {}
