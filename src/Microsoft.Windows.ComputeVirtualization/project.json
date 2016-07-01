@@ -12,12 +12,10 @@
   },
   "frameworks": {
     "net46": {
-      "dependencies": {
-        "System.Runtime": "4.0.20",
-        "System.Runtime.Serialization.Primitives": "4.1.0"
-      },
       "frameworkAssemblies": {
-        "System.Xml": ""
+        "System.Xml": "",
+        "System.Runtime": "",
+        "System.Runtime.Serialization": ""
       }
     },
     "netcoreapp1.0": {

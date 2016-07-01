@@ -55,7 +55,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     struct MappedDirectory
     {
@@ -95,7 +95,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     struct DeviceBase
     {
@@ -107,7 +107,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     struct UtilityVmNetworkSettings
     {
@@ -126,7 +126,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     struct UtilityVmSettings
     {
@@ -173,7 +173,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     struct SettingsBase
     {
@@ -197,7 +197,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     struct ContainerSettings
     {
@@ -257,6 +257,13 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
 
         [DataMember(EmitDefaultValue = false)]
         public string HostName
+        {
+            get;
+            set;
+        }
+
+        [DataMember(EmitDefaultValue = false)]
+        public bool TerminateOnLastHandleClosed
         {
             get;
             set;
@@ -368,7 +375,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     struct NatPortBinding
     {
@@ -406,7 +413,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     struct NatSettings
     {
@@ -425,7 +432,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     struct NetworkConnection
     {
@@ -465,7 +472,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     struct NetworkSettings
     {
@@ -477,7 +484,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     struct NetworkDevice
     {
@@ -503,7 +510,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     public struct Subnet
     {
@@ -522,7 +529,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     public struct MacPool
     {
@@ -541,7 +548,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     public struct Policy
     {
@@ -565,7 +572,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     public struct NatPolicyData
     {
@@ -622,7 +629,7 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
         }
     }
 
-    
+
     [DataContract]
     public struct QosPolicyData
     {
