@@ -60,6 +60,9 @@ namespace Microsoft.Windows.ComputeVirtualization
 
             [DllImport("vmcompute.dll", PreserveSig = false, ExactSpelling = true)]
             public static extern void ProcessUtilityImage(string path);
+
+            [DllImport("vmcompute.dll", PreserveSig = false, ExactSpelling = true)]
+            public static extern void ExpandSandboxSize(ref DriverInfo info, string id, UInt64 size);
         }
 
         private class DriverInfoHelper : IDisposable
@@ -270,6 +273,19 @@ namespace Microsoft.Windows.ComputeVirtualization
         public static void ProcessUtilityVMImage(string path)
         {
             StorageFunctions.ProcessUtilityImage(Path.GetFullPath(path));
+        }
+
+        /// <summary>
+        /// Expands the size of a layer to at least [size] bytes.
+        /// </summary>
+        /// <param name="path">The path to the layer.</param>
+        /// <param name="size">The size to expand the layer to in bytes. The layer will be expanded if size is larger than the current size of the layer.</param>
+        public static void ExpandSandboxSize(string path, UInt64 size)
+        {
+            using (var info = new DriverInfoHelper())
+            {
+                StorageFunctions.ExpandSandboxSize(ref info.Data, Path.GetFullPath(path), size);
+            }
         }
     }
 }
