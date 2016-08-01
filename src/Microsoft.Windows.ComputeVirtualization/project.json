@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0-alpha4",
+  "version": "0.1.0-*",
   "description": "Simple class library to interface with Windows host compute service.",
   "copyright": "© Microsoft Corporation. All rights reserved.",
   "authors": [

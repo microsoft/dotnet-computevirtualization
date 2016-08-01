@@ -1,0 +1,15 @@
+version: 'alpha4.{build}'
+pull_requests:
+  do_not_increment_build_number: true
+init:
+- ps: (new-object net.webclient).DownloadFile('https://dotnetcli.blob.core.windows.net/dotnet/beta/Installers/Latest/dotnet-dev-win-x64.latest.exe', "c:/dotnet-install.exe")
+- ps: Start-Process c:\dotnet-install.exe -ArgumentList "/install","/quiet" -Wait
+nuget:
+  disable_publish_on_pr: true
+build_script:
+- ps: $psversiontable
+- ps: dotnet --version
+- ps: dotnet restore
+- ps: dotnet pack $pwd\src\Microsoft.Windows.ComputeVirtualization -o $pwd\bin --version-suffix $env:APPVEYOR_BUILD_VERSION 
+artifacts:
+- path: bin/*.nupkg
