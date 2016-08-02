@@ -104,21 +104,28 @@ namespace Microsoft.Windows.ComputeVirtualization.Schema
     struct ProcessStatus
     {
         [DataMember]
-        public bool ProcessExited
+        public uint ProcessId
         {
             get;
             set;
         }
 
         [DataMember]
-        public ushort ExitCode
+        public bool Exited
         {
             get;
             set;
         }
 
         [DataMember]
-        public int WaitResult
+        public uint ExitCode
+        {
+            get;
+            set;
+        }
+
+        [DataMember]
+        public int LastWaitResult
         {
             get;
             set;

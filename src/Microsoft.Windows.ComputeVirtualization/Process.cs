@@ -101,7 +101,7 @@ namespace Microsoft.Windows.ComputeVirtualization
         {
             var result = await _watcher.WatchAsync(HCS_NOTIFICATIONS.HcsNotificationProcessExited);
             var processData = JsonHelper.FromJson<Schema.ProcessStatus>(result.Data);
-            _exitCode = processData.ExitCode;
+            _exitCode = (int)processData.ExitCode;
             _exited = true;
         }
 
