@@ -1,3 +1,0 @@
-[submodule "src/Microsoft.Windows.ComputeVirtualization"]
-	path = src/Microsoft.Windows.ComputeVirtualization
-	url = https://github.com/Microsoft/dotnet-computevirtualization.git
