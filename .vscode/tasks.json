@@ -1,0 +1,66 @@
+{
+    "version": "0.1.0",
+    "command": "cmd",
+    "isShellCommand": true,
+    "showOutput": "silent",
+    "args": [
+        "/c"
+    ],
+    "tasks": [
+        {
+            "taskName": "restore",
+            "suppressTaskName": true,
+            "args": [
+                "dotnet",
+                "restore"
+            ],
+            "showOutput": "always",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "build",
+            "suppressTaskName": true,
+            "args": [
+                "dotnet",
+                "build",
+                "${cwd}\\src\\Microsoft.Windows.ComputeVirtualization"
+            ],
+            "isBuildCommand": true,
+            "showOutput": "always",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "test",
+            "suppressTaskName": true,
+            "args": [
+                "dotnet",
+                "test",
+                "${cwd}\\test\\Microsoft.Windows.ComputeVirtualization.Tests"
+            ],
+            "showOutput": "always",
+            "isTestCommand": true
+        },
+        {
+            "taskName": "sample-build",
+            "suppressTaskName": true,
+            "args": [
+                "dotnet",
+                "build",
+                "samples\\**\\project.json"
+            ],
+            "showOutput": "always",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "test-build",
+            "suppressTaskName": true,
+            "args": [
+                "dotnet",
+                "build",
+                "test\\**\\project.json"
+            ],
+            "showOutput": "always",
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}

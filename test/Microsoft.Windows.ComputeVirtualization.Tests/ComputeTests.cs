@@ -6,14 +6,14 @@ using Xunit;
 
 namespace Microsoft.Windows.ComputeVirtualization.Tests
 {
-    public class ServercoreContainerTests : IDisposable
+    public class ContainerTests : IDisposable
     {
         Guid id = Guid.NewGuid();
         Sandbox sandbox;
 
-        public ServercoreContainerTests()
+        public ContainerTests()
         {
-            sandbox = new Sandbox(Sandbox.ContainerType.ServerCore, id);
+            sandbox = new Sandbox(id);
         }
 
         [Fact]
@@ -210,26 +210,12 @@ namespace Microsoft.Windows.ComputeVirtualization.Tests
 
     public class Sandbox : IDisposable
     {
-        public enum ContainerType { ServerCore, NanoServer }
-        const string servercoreBaseLayerEnv = "SERVERCORE_BASE_LAYER";
-        const string nanoserverBaseLayerEnv = "NANOSERVER_BASE_LAYER";
+        const string baseLayerEnv = "CONTAINER_BASE_LAYER";
         public string path { get; }
         public Layer[] layers { get; }
-        public Sandbox(ContainerType containerType, Guid id)
+        public Sandbox(Guid id)
         {
             string parent;
-            string baseLayerEnv;
-            switch (containerType)
-            {
-                case ContainerType.ServerCore:
-                    baseLayerEnv = servercoreBaseLayerEnv;
-                    break;
-                case ContainerType.NanoServer:
-                    baseLayerEnv = nanoserverBaseLayerEnv;
-                    break;
-                default:
-                    throw new ArgumentException("Invalid container type");
-            }
             parent = Environment.GetEnvironmentVariable(baseLayerEnv);
 
             path = String.Format("C:\\\\ComputeVirtualizationTest\\{0}", id.ToString());
