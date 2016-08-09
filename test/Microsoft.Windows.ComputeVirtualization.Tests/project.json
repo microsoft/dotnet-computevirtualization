@@ -10,11 +10,11 @@
     "debugType": "portable"
   },
   "runtimes": {
-    "win10-x64": {}
+    "win81-x64": {}
   },
   "dependencies": {
-    "xunit": "2.2.0-beta1-build3239",
-    "dotnet-test-xunit": "1.0.0-rc2-build10025",
+    "xunit": "2.2.0-beta2-build3300",
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Microsoft.Windows.ComputeVirtualization": "0.1.0-alpha4"
   },
   "frameworks": {

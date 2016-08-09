@@ -10,6 +10,8 @@ build_script:
 - ps: $psversiontable
 - ps: dotnet --version
 - ps: dotnet restore
+- ps: dotnet build **\project.json
 - ps: dotnet pack $pwd\src\Microsoft.Windows.ComputeVirtualization -o $pwd\bin --version-suffix $env:APPVEYOR_BUILD_VERSION 
+test: off
 artifacts:
 - path: bin/*.nupkg
