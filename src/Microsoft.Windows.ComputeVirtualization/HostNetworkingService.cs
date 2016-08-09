@@ -12,11 +12,11 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// <param name="path">The path of the request</param>
         /// <param name="request">The request data</param>
         /// <returns>The queried network.</returns>
-        public static HNSNetwork HNSNetworkRequest(string method, string path, string request)
+        public static HNSNetwork HNSNetworkRequest(string method, string path, string request, IHns hns = null)
         {
             string result;
 
-            HcsFunctions.HNSCall(method, "/networks/" + path, request, out result);
+            (hns ?? HnsFactory.GetHns()).Call(method, "/networks/" + path, request, out result);
 
             var response = JsonHelper.FromJson<Schema.HNSSingleNetworkResponse>(result);
             if (!response.Success)
@@ -34,11 +34,11 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// <param name="path">The path of the request</param>
         /// <param name="request">The request data</param>
         /// <returns>The filtered list of networks.</returns>
-        public static HNSNetwork[] HNSListNetworkRequest(string method, string path, string request)
+        public static HNSNetwork[] HNSListNetworkRequest(string method, string path, string request, IHns hns = null)
         {
             string result;
 
-            HcsFunctions.HNSCall(method, "/networks/" + path, request, out result);
+            (hns ?? HnsFactory.GetHns()).Call(method, "/networks/" + path, request, out result);
 
             var response = JsonHelper.FromJson<Schema.HNSNetworkResponse>(result);
             if (!response.Success)
@@ -56,11 +56,11 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// <param name="path">The path of the request</param>
         /// <param name="request">The request data</param>
         /// <returns>The queried endpoint.</returns>
-        public static HNSEndpoint HNSEndpointRequest(string method, string path, string request)
+        public static HNSEndpoint HNSEndpointRequest(string method, string path, string request, IHns hns = null)
         {
             string result;
 
-            HcsFunctions.HNSCall(method, "/endpoints/" + path, request, out result);
+            (hns ?? HnsFactory.GetHns()).Call(method, "/endpoints/" + path, request, out result);
 
             var response = JsonHelper.FromJson<Schema.HNSEndpointResponse>(result);
             if (!response.Success)
