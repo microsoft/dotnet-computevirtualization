@@ -10,6 +10,7 @@ namespace Microsoft.Windows.ComputeVirtualization
     /// </summary>
     public class Process : IDisposable
     {
+        private IHcs _hcs;
         private IntPtr _p;
         private HcsNotificationWatcher _watcher;
         private StreamWriter _stdin;
@@ -51,8 +52,9 @@ namespace Microsoft.Windows.ComputeVirtualization
             }
         }
 
-        internal Process(IntPtr process, StreamWriter stdin, StreamReader stdout, StreamReader stderr, bool killOnClose)
+        internal Process(IntPtr process, StreamWriter stdin, StreamReader stdout, StreamReader stderr, bool killOnClose, IHcs hcs)
         {
+            _hcs = hcs;
             _p = process;
             _stdin = stdin;
             _stdout = stdout;
@@ -60,8 +62,8 @@ namespace Microsoft.Windows.ComputeVirtualization
             _killOnClose = killOnClose;
             _watcher = new HcsNotificationWatcher(
                 _p,
-                HcsFunctions.HcsRegisterProcessCallback,
-                HcsFunctions.HcsUnregisterProcessCallback,
+                _hcs.RegisterProcessCallback,
+                _hcs.UnregisterProcessCallback,
                 new HCS_NOTIFICATIONS[]{
                     HCS_NOTIFICATIONS.HcsNotificationProcessExited
                 }
@@ -83,8 +85,7 @@ namespace Microsoft.Windows.ComputeVirtualization
             procModReq.Operation = Schema.ProcessModifyOperation.ConsoleSize;
             procModReq.ConsoleSize = procSize;
 
-            string result;
-            HcsFunctions.ProcessHcsCall(HcsFunctions.HcsModifyProcess(_p, JsonHelper.ToJson(procModReq), out result), result);
+            _hcs.ModifyProcess(_p, JsonHelper.ToJson(procModReq));
         }
 
         /// <summary>
@@ -119,8 +120,7 @@ namespace Microsoft.Windows.ComputeVirtualization
 
         public async Task KillAsync()
         {
-            string result;
-            if (!_killed && !_exited && HcsFunctions.ProcessHcsCall(HcsFunctions.HcsTerminateProcess(_p, out result), result))
+            if (!_killed && !_exited && _hcs.TerminateProcess(_p))
             {
                 await _watcher.WatchAsync(HCS_NOTIFICATIONS.HcsNotificationProcessExited);
             }
@@ -151,7 +151,7 @@ namespace Microsoft.Windows.ComputeVirtualization
             _watcher.Dispose();
             if (_p != IntPtr.Zero)
             {
-                HcsFunctions.ProcessHcsCall(HcsFunctions.HcsCloseProcess(_p), null);
+                _hcs.CloseProcess(_p);
                 _p = IntPtr.Zero;
             }
         }

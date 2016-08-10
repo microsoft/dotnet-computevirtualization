@@ -68,10 +68,10 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// Find a container network that uses a NAT for connectivity.
         /// </summary>
         /// <returns>The ID of the network.</returns>
-        public static Guid FindNatNetwork()
+        public static Guid FindNatNetwork(IHns hns = null)
         {
             string result;
-            HcsFunctions.HNSCall("GET", "/networks/", "", out result);
+            (hns ?? HnsFactory.GetHns()).Call("GET", "/networks/", "", out result);
             var response = JsonHelper.FromJson<Schema.HNSNetworkResponse>(result);
             if (!response.Success)
             {
@@ -102,8 +102,9 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// <param name="id">The ID of the new container. Must be unique on the machine.</param>
         /// <param name="settings">The settings for the container.</param>
         /// <returns>A Container object that can be used to manipulate the container.</returns>
-        public static Container CreateContainer(string id, ContainerSettings settings)
+        public static Container CreateContainer(string id, ContainerSettings settings, IHcs hcs = null)
         {
+            var h = hcs ?? HcsFactory.GetHcs();
             var hcsSettings = new Schema.ContainerSettings
             {
                 SystemType = Schema.SystemType.Container,
@@ -139,9 +140,8 @@ namespace Microsoft.Windows.ComputeVirtualization
             }
 
             IntPtr computeSystem;
-            string result;
-            HcsFunctions.ProcessHcsCall(HcsFunctions.HcsCreateComputeSystem(id, JsonHelper.ToJson(hcsSettings), IntPtr.Zero, out computeSystem, out result), result);
-            return Container.Initialize(id, computeSystem, settings.KillOnClose);
+            h.CreateComputeSystem(id, JsonHelper.ToJson(hcsSettings), IntPtr.Zero, out computeSystem);
+            return Container.Initialize(id, computeSystem, settings.KillOnClose, h);
         }
 
         /// <summary>
@@ -149,13 +149,13 @@ namespace Microsoft.Windows.ComputeVirtualization
         /// </summary>
         /// <param name="id">The ID of the container.</param>
         /// <returns>A Container object that can be used to manipulate the container.</returns>
-        public static Container GetComputeSystem(string id)
+        public static Container GetComputeSystem(string id, IHcs hcs = null)
         {
             IntPtr computeSystem;
-            string result;
-            HcsFunctions.ProcessHcsCall(HcsFunctions.HcsOpenComputeSystem(id, out computeSystem, out result), result);
+            var h = hcs ?? HcsFactory.GetHcs();
+            h.OpenComputeSystem(id, out computeSystem);
 
-            return Container.Initialize(id, computeSystem, false);
+            return Container.Initialize(id, computeSystem, false, h);
         }
     }
 }

@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Windows.ComputeVirtualization
 {
-    internal class NotificationResult
+    public class NotificationResult
     {
         public int Status;
         public string Data;
     }
 
-    internal enum HCS_NOTIFICATIONS : uint
+    public enum HCS_NOTIFICATIONS : uint
     {
         HcsNotificationInvalid = 0x00000000,
 
@@ -32,13 +32,13 @@ namespace Microsoft.Windows.ComputeVirtualization
     }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate void NotificationCallback(uint notificationType, IntPtr context, int notificationStatus, [MarshalAs(UnmanagedType.LPWStr)] string notificationData);
+    public delegate void NotificationCallback(uint notificationType, IntPtr context, int notificationStatus, [MarshalAs(UnmanagedType.LPWStr)] string notificationData);
 
-    internal delegate int RegisterHcsNotificationCallback(IntPtr handle, NotificationCallback callback, IntPtr context, out IntPtr callbackHandle);
+    public delegate void RegisterHcsNotificationCallback(IntPtr handle, NotificationCallback callback, IntPtr context, out IntPtr callbackHandle);
 
-    internal delegate int UnregisterHcsNotificationCallback(IntPtr handle);
+    public delegate void UnregisterHcsNotificationCallback(IntPtr handle);
 
-    internal class HcsNotificationWatcher : IDisposable
+    public class HcsNotificationWatcher : IDisposable
     {
         private IntPtr _h;
         private NotificationCallback _callbackFunc;
@@ -93,7 +93,7 @@ namespace Microsoft.Windows.ComputeVirtualization
                 }
             };
 
-            HcsFunctions.ProcessHcsCall(register(handle, _callbackFunc, IntPtr.Zero, out _h), null);
+            register(handle, _callbackFunc, IntPtr.Zero, out _h);
         }
 
         public Task<NotificationResult> WatchAsync(HCS_NOTIFICATIONS notificationType)

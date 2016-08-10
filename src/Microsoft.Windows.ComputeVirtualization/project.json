@@ -5,6 +5,9 @@
   "authors": [
     "Microsoft"
   ],
+  "buildOptions": {
+    "debugType": "portable"
+  },
   "packOptions": {
     "licenseUrl": "https://raw.githubusercontent.com/Microsoft/dotnet-computevirtualization/master/LICENSE",
     "projectUrl": "https://github.com/Microsoft/dotnet-computevirtualization/",
