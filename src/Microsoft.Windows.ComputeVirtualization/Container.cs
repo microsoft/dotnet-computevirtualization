@@ -40,7 +40,7 @@ namespace Microsoft.Windows.ComputeVirtualization
             _watcher = watcher;
         }
 
-        internal static Container Initialize(string id, IntPtr computeSystem, bool terminateOnClose, IHcs hcs = null)
+        internal static Container Initialize(string id, IntPtr computeSystem, bool terminateOnClose, bool creatingContainer, IHcs hcs = null)
         {
             var h = hcs ?? HcsFactory.GetHcs();
             var watcher = new HcsNotificationWatcher(
@@ -59,7 +59,8 @@ namespace Microsoft.Windows.ComputeVirtualization
                 terminateOnClose,
                 watcher,
                 h);
-            watcher.Wait(HCS_NOTIFICATIONS.HcsNotificationSystemCreateCompleted);
+            if (creatingContainer)
+               watcher.Wait(HCS_NOTIFICATIONS.HcsNotificationSystemCreateCompleted); 
 
             return container;
         }

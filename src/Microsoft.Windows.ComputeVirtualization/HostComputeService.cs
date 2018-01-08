@@ -141,7 +141,7 @@ namespace Microsoft.Windows.ComputeVirtualization
 
             IntPtr computeSystem;
             h.CreateComputeSystem(id, JsonHelper.ToJson(hcsSettings), IntPtr.Zero, out computeSystem);
-            return Container.Initialize(id, computeSystem, settings.KillOnClose, h);
+            return Container.Initialize(id, computeSystem, settings.KillOnClose, true, h);
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace Microsoft.Windows.ComputeVirtualization
             var h = hcs ?? HcsFactory.GetHcs();
             h.OpenComputeSystem(id, out computeSystem);
 
-            return Container.Initialize(id, computeSystem, false, h);
+            return Container.Initialize(id, computeSystem, false, false, h);
         }
     }
 }
