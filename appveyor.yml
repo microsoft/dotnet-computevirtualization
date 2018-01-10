@@ -2,16 +2,16 @@ version: '{build}'
 pull_requests:
   do_not_increment_build_number: true
 init:
-- ps: (new-object net.webclient).DownloadFile('https://dotnetcli.blob.core.windows.net/dotnet/beta/Installers/Latest/dotnet-dev-win-x64.latest.exe', "c:/dotnet-install.exe")
-- ps: Start-Process c:\dotnet-install.exe -ArgumentList "/install","/quiet" -Wait
+- ps: (new-object net.webclient).DownloadFile('https://dot.net/v1/dotnet-install.ps1', "C:/dotnet-install.ps1")
+- ps: C:/dotnet-install.ps1 -Channel 2.0
 nuget:
   disable_publish_on_pr: true
 build_script:
 - ps: $psversiontable
 - ps: dotnet --version
-- ps: dotnet restore
-- ps: dotnet build **\project.json
-- ps: dotnet pack $pwd\src\Microsoft.Windows.ComputeVirtualization -o $pwd\bin --version-suffix $env:APPVEYOR_BUILD_VERSION 
+- ps: dotnet restore --no-cache
+- ps: dotnet build
+- ps: dotnet pack src/Microsoft.Windows.ComputeVirtualization/Microsoft.Windows.ComputeVirtualization.csproj -c Release -o $pwd/bin --version-suffix $env:APPVEYOR_BUILD_VERSION 
 test: off
 artifacts:
 - path: bin/*.nupkg
