@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32.SafeHandles;
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.IO;
 using System.Text;
@@ -40,7 +40,7 @@ namespace Microsoft.Windows.ComputeVirtualization
             _watcher = watcher;
         }
 
-        internal static Container Initialize(string id, IntPtr computeSystem, bool terminateOnClose, IHcs hcs = null)
+        internal static Container Initialize(string id, IntPtr computeSystem, bool terminateOnClose, bool createNewContainer, IHcs hcs = null)
         {
             var h = hcs ?? HcsFactory.GetHcs();
             var watcher = new HcsNotificationWatcher(
@@ -59,7 +59,10 @@ namespace Microsoft.Windows.ComputeVirtualization
                 terminateOnClose,
                 watcher,
                 h);
-            watcher.Wait(HCS_NOTIFICATIONS.HcsNotificationSystemCreateCompleted);
+            if (createNewContainer)
+            {
+                watcher.Wait(HCS_NOTIFICATIONS.HcsNotificationSystemCreateCompleted);
+            }
 
             return container;
         }
